@@ -1,0 +1,24 @@
+<RCC>
+    <qresource prefix="/">
+        <file>img/cantsavefile.png</file>
+        <file>img/click1.png</file>
+        <file>img/click1use.png</file>
+        <file>img/click2.png</file>
+        <file>img/click2use.png</file>
+        <file>img/closefile.png</file>
+        <file>img/newfile.png</file>
+        <file>img/open.png</file>
+        <file>img/pause.png</file>
+        <file>img/play.png</file>
+        <file>img/press1.png</file>
+        <file>img/press1use.png</file>
+        <file>img/press2.png</file>
+        <file>img/press2use.png</file>
+        <file>img/preview.png</file>
+        <file>img/savefile.png</file>
+        <file>img/slid.png</file>
+        <file>img/sliduse.png</file>
+        <file>img/bpm.png</file>
+        <file>img/bpmuse.png</file>
+    </qresource>
+</RCC>
