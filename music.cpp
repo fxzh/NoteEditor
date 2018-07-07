@@ -9,12 +9,14 @@ void MainWindow::PlayMusic()
         paintzt=1;
         emit sendTh3Exit();
         PlayAction->setIcon(QIcon(":/img/play.png"));
+        labvis->setMouseTracking(true);
     }
     else if(playZt==1)
     {
         emit sendBeginTime(slid->value());
         th3->start();
         PlayAction->setIcon(QIcon(":/img/pause.png"));
+        labvis->setMouseTracking(false);
     }
     th2->start();
 }

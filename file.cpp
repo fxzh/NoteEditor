@@ -36,12 +36,15 @@ void MainWindow::open()
         setWindowTitle(path);
         filea=new QFile(path);
         MainWindow::loadfile(filea);
-        MainWindow::initmid();
-        MainWindow::paintmid();
+/*        MainWindow::initmid();
+        MainWindow::paintmid();*/
+
+        initmid2();
+
 //        qd()<<"start search";
-        MainWindow::searchBpmIndex(0);
+        searchBpmIndex(0);
 //        qd()<<"finish search";
-        MainWindow::beforepaint();
+        beforepaint();
     }
 }
 

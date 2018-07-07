@@ -4,6 +4,10 @@ void MainWindow::paintEvent(QPaintEvent *e)
 {
     testTime.start();times++;//int a,b,c,d;
     Q_UNUSED(e);
+/*    if(ttemp>=1)
+        qs<<"ac";
+    if(ttemp==1)
+        qs<<paintBpmIndex1<<paintBpmIndex2;*/
     if(paintzt==1||paintzt==3)
     {
         pix=QPixmap(labvis3,labvis4);
@@ -16,10 +20,6 @@ void MainWindow::paintEvent(QPaintEvent *e)
         int bpmnonepx=0;
         for(int i=paintBpmIndex1;i<=paintBpmIndex2;i++)
         {
-/*            if(paintBpmIndex1<paintBpmIndex2)
-            {
-                qd()<<"here";
-            }*/
             //计算各bpm的起始点,终点
             int bpmtime=bpmTable->item(i,0)->data(0).toInt();
             double thisbpm=bpmTable->item(i,1)->data(0).toDouble();
@@ -33,24 +33,26 @@ void MainWindow::paintEvent(QPaintEvent *e)
             int bebpmpx=bpmnonepx;
             int a=inPaint(bpmtime,thisbpm,bpmeffect,bpmbeat,bpmcon,bpmnonepx);
             bpmnonepx=a;
+            editPoint1.setY(int(labvis4-dFirstSmallpx-int((labvis4-dFirstSmallpx-labMouseY)/\
+                                                          (bh*bpmeffect))*(bh*bpmeffect)));
+            editPoint1.setX(labMouseX-dNoteWidth*labvis3/10);
+            editPoint2.setY(int(labvis4-dFirstSmallpx-int((labvis4-dFirstSmallpx-labMouseY)/\
+                                                          (bh*bpmeffect))*(bh*bpmeffect)));
+            editPoint2.setX(labMouseX+dNoteWidth*labvis3/10);
 
             //画灰线
             pan.setPen(QColor(220,220,220));
             tempsmallpx=labvis4-dFirstSmallpx;
-//            qd()<<"灰开头px"<<tempsmallpx;
-            while(tempsmallpx>labvis4-bpmnonepx)
+            while(tempsmallpx>labvis4-bpmnonepx&&tempsmallpx>=0)
             {
                 pan.drawLine(0,int(tempsmallpx),labvis3,int(tempsmallpx));
                 tempsmallpx=tempsmallpx-double(bh*bpmeffect);
-//                qd()<<tempsmallpx;
             }
-//            qd()<<"灰结尾px"<<tempsmallpx;
             //画灰黑线
             if(smallbar->currentIndex()!=0&&smallbar->currentIndex()!=1&&\
                     smallbar->currentIndex()!=2&&smallbar->currentIndex()!=4)
             {
                 double tempMidpx=labvis4-dFirstMidpx;
-//                qd()<<"midpx"<<tempMidpx;
                 pan.setPen(QColor(130,130,130));
                 while(tempMidpx>labvis4-bpmnonepx)
                 {
@@ -66,25 +68,39 @@ void MainWindow::paintEvent(QPaintEvent *e)
                 pan.drawLine(0,tempbigpx,labvis3,tempbigpx);
                 tempbigpx=tempbigpx-double(bh*bpmeffect*smallbars);
             }
-//            b=testTime.elapsed();
-//            qd()<<"dfst:"<<dFirstSmallbarTime;
             //画note
-//            qd()<<"last"<<slid->value()<<bpmLastTime;
             for(int i=1;i<=tw->rowCount();i++)
             {
-                if(tw->item(i-1,1)->data(0).toInt()>bpmLastTime)
+                if(tw->item(i-1,1)->data(0).toInt()>dLastSmallbarTime||tw->item(i-1,1)->data(0).toInt()>bpmLastTime)
                 {
                     break;
                 }
                 else if(tw->item(i-1,1)->data(0).toInt()+tw->item(i-1,4)->data(0).toInt()>dFirstSmallbarTime-70)
                 {
-//                    qd()<<"paint note";
-                    float dNoteTimepx,dNoteCanAddTimepx,dLeftPoint,dRightPoint;
+                    double dNoteTimepx,dNoteCanAddTimepx,dLeftPoint,dRightPoint;
                     int NoteTimepx,NoteCanAddTimepx,LeftPoint,RightPoint;
-                    dNoteTimepx=labvis4-((tw->item(i-1,1)->data(0).toInt()-bpmtime)\
-                                         *(bh*bpmeffect*thisbpm*smallbars/1250.0/192.0)+bebpmpx);
-                    dNoteCanAddTimepx=labvis4-((tw->item(i-1,1)->data(0).toInt()+tw->item(i-1,4)->data(0).toInt()\
-                                             -bpmtime)*(bh*bpmeffect*thisbpm*smallbars/1250.0/192.0)+bebpmpx);
+                    if(tw->item(i-1,1)->data(0).toInt()<dFirstSmallbarTime)
+                    {
+                        dNoteTimepx=labvis4-((dFirstSmallbarTime-bpmtime)\
+                                             *(bh*bpmeffect*thisbpm*smallbars/1250.0/192.0)+bebpmpx);
+                    }
+                    else
+                    {
+                        dNoteTimepx=labvis4-((tw->item(i-1,1)->data(0).toInt()-bpmtime)\
+                                             *(bh*bpmeffect*thisbpm*smallbars/1250.0/192.0)+bebpmpx);
+                    }
+
+                    if(tw->item(i-1,1)->data(0).toInt()+tw->item(i-1,4)->data(0).toInt()>bpmLastTime)
+                    {
+                        dNoteCanAddTimepx=labvis4-((bpmLastTime\
+                                                 -bpmtime)*(bh*bpmeffect*thisbpm*smallbars/1250.0/192.0)+bebpmpx);
+                    }
+                    else
+                    {
+                        dNoteCanAddTimepx=labvis4-((tw->item(i-1,1)->data(0).toInt()+tw->item(i-1,4)->data(0).toInt()\
+                                                 -bpmtime)*(bh*bpmeffect*thisbpm*smallbars/1250.0/192.0)+bebpmpx);
+                    }
+
                     dLeftPoint=(tw->item(i-1,2)->data(0).toDouble()\
                                 -0.5*tw->item(i-1,3)->data(0).toDouble()+2.5)*labvis3/5.0;
                     dRightPoint=(tw->item(i-1,2)->data(0).toDouble()\
@@ -142,9 +158,33 @@ void MainWindow::paintEvent(QPaintEvent *e)
                     }
                 }
             }
-            //画虚note        not changed
-            if(MouseInLabvis==1)
+            //画变bpm标识
+            for(int i=0;i<bpmTable->rowCount();i++)
             {
+                if(bpmTable->item(i,0)->data(0).toInt()>=bpmLastTime)
+                {
+                    break;
+                }
+                else if(bpmTable->item(i,0)->data(0).toInt()>dFirstSmallbarTime-70)
+                {
+                    double dNoteTimepx;
+                    int NoteTimepx;
+                    dNoteTimepx=labvis4-((bpmTable->item(i,0)->data(0).toInt()-bpmtime)\
+                                             *(bh*bpmeffect*thisbpm*smallbars/1250.0/192.0)+bebpmpx);
+                    NoteTimepx=dNoteTimepx;
+                    QString aa=QString("%1").arg(bpmTable->item(i,2)->data(0).toDouble());
+                    aa.insert(0,"*");
+                    aa.insert(0,QString("%1").arg(bpmTable->item(i,1)->data(0).toDouble()));
+                    pan.setPen(QColor(0,0,0));
+                    pan.drawText(labvis3-100,NoteTimepx-20,100,20,Qt::AlignRight,aa);
+                }
+            }
+            //画虚note
+            if(MouseInLabvis==1&&labMouseY>labvis4-bpmnonepx&&labMouseY<=labvis4-bebpmpx)
+            {
+                mouseLabBpmTable=i;
+                dtForPress=dFirstSmallbarTime;
+                dpxForPress=dFirstSmallpx;
                 if(editZt==1)
                 {
                     pan.setPen(QColor(0,53,236));
@@ -174,9 +214,9 @@ void MainWindow::paintEvent(QPaintEvent *e)
                     else
                     {
                         moveTime2=int(dFirstSmallbarTime\
-                                      +int((labvis4-dFirstSmallpx-labMouseY)/(bh*effect))*dSmallbarTime);
-                        moveLongNotePx=int((bh*effect)*(moveTime2-pressTime)/dSmallbarTime);
-                        pan.drawRect(editPoint1.x(),editPoint1.y(),editPoint2.x()-editPoint1.x(),moveLongNotePx);
+                                      +int((labvis4-dFirstSmallpx-labMouseY)/(bh*bpmeffect))*dSmallbarTime);
+                        moveLongNotePx=int((bh*bpmeffect)*(moveTime2-pressTime)/dSmallbarTime);
+                        pan.drawRect(fixEditPointX,editPoint1.y(),fixEditPointX2-fixEditPointX,moveLongNotePx);
                     }
                 }
                 else if(editZt==5)
@@ -190,18 +230,22 @@ void MainWindow::paintEvent(QPaintEvent *e)
                     else
                     {
                         moveTime2=int(dFirstSmallbarTime\
-                                      +int((labvis4-dFirstSmallpx-labMouseY)/(bh*effect))*dSmallbarTime);
-                        moveLongNotePx=int((bh*effect)*(moveTime2-pressTime)/dSmallbarTime);
-                        pan.drawRect(editPoint1.x(),editPoint1.y(),editPoint2.x()-editPoint1.x(),moveLongNotePx);
+                                      +int((labvis4-dFirstSmallpx-labMouseY)/(bh*bpmeffect))*dSmallbarTime);
+                        moveLongNotePx=int((bh*bpmeffect)*(moveTime2-pressTime)/dSmallbarTime);
+                        pan.drawRect(fixEditPointX,editPoint1.y(),fixEditPointX2-fixEditPointX,moveLongNotePx);
                     }
                 }
+                else if(editZt==6)
+                {
+                    pan.setPen(QColor(0,0,0));
+                    pan.setBrush(QBrush(QColor(0,0,0,255)));
+                    pan.drawText(labvis3-100,editPoint1.y()-15,100,15\
+                                 ,Qt::AlignRight,editBpm->text()+"*"+editBpm2->text());
+                }
             }
-//            c=testTime.elapsed();
             //画时间
             double dtempsmalltime=dFirstSmallbarTime;
-//            qd()<<"test"<<dtempsmalltime<<th2->MusicMp3->position();
             tempsmallpx=labvis4-dFirstSmallpx;
-//            qd()<<tempsmallpx;
             pan.setPen(QColor(0,0,0));
             while(tempsmallpx>labvis4-bpmnonepx)
             {
@@ -210,7 +254,6 @@ void MainWindow::paintEvent(QPaintEvent *e)
                 tempsmallpx=tempsmallpx-double(bh*bpmeffect);
                 dtempsmalltime=dtempsmalltime+dSmallbarTime;
             }
-//            d=testTime.elapsed();
         }
         labvis->setPixmap(pix);
         labvis->show();
@@ -218,9 +261,10 @@ void MainWindow::paintEvent(QPaintEvent *e)
             paintzt=2;
         emit th3ExitLoop();
     }
-//    a=testTime.elapsed();
-/*    if(a>4)
-        qd()<<times<<a<<b<<c<<d;*/
+    if(ttemp==1)
+    {
+        qs<<"ae";
+    }
 }
 
 void MainWindow::resizeEvent(QResizeEvent *rese)
@@ -281,9 +325,7 @@ int MainWindow::inPaint(int bpmtime,double bpm,double bpmeffect,int bpmbeats,int
     dFirstBigbarTime=((192-bpmbeats%192)%192)*1250/bpm+bpmtime;
     if(dFirstSmallbarTime<slid->value())
     {
-//        qd()<<"未增加前灰线时间"<<dFirstSmallbarTime;
         dFirstSmallbarTime=dFirstSmallbarTime+int((slid->value()-dFirstSmallbarTime)/dSmallbarTime)*dSmallbarTime;
-//        qd()<<"开始灰线时间"<<dFirstSmallbarTime<<"音乐时间"<<th2->MusicMp3->position();
     }
     if(dFirstMidbarTime<slid->value())
     {
@@ -294,13 +336,10 @@ int MainWindow::inPaint(int bpmtime,double bpm,double bpmeffect,int bpmbeats,int
         dFirstBigbarTime=dFirstBigbarTime+int((slid->value()-dFirstBigbarTime)/dBigbarTime)*dBigbarTime;
     }
     FirstSmallbarTime=dFirstSmallbarTime;firstMidbarTime=dFirstMidbarTime;FirstBigbarTime=dFirstBigbarTime;
-//    qd()<<FirstBigbarTime<<firstMidbarTime<<FirstSmallbarTime;
     dFirstSmallpx=bh*bpmeffect*bpm*smallbars/1250.0/192.0*(dFirstSmallbarTime-bpmtime)+bpmnonepx;
-//    qd()<<"bpm所在px"<<bpmnonepx<<"灰线底部px"<<dFirstSmallpx;
     FirstSmallpx=dFirstSmallpx;
     dFirstMidpx=bh*bpmeffect*bpm*smallbars/1250.0/192.0*(dFirstMidbarTime-bpmtime)+bpmnonepx;firstMidpx=dFirstMidpx;
     dFirstBigpx=bh*bpmeffect*bpm*smallbars/1250.0/192.0*(dFirstBigbarTime-bpmtime)+bpmnonepx;FirstBigpx=dFirstBigpx;
-//    qd()<<"Firstmpx"<<dFirstMidpx<<"none"<<bpmnonepx;
     dFirstNonePx=bpmnonepx;
     if(bpmcon==-1)
     {
@@ -319,6 +358,8 @@ int MainWindow::inPaint(int bpmtime,double bpm,double bpmeffect,int bpmbeats,int
         dBpmConPx=smallbars*bh*bpmeffect*bpmcon/192.0;
         dBpmLastTime=bpmtime+1250*bpmcon/bpm;
     }
+    dLastSmallbarTime=dFirstSmallbarTime+labvis4*(dSmallbarTime/(bh*bpmeffect)+1);
+    LastSmallbarTime=dLastSmallbarTime;
     bpmConPx=dBpmConPx;
     bpmLastTime=dBpmLastTime;
     return bpmnonepx+bpmConPx;

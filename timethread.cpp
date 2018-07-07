@@ -14,7 +14,7 @@ void timethread::run()
 {
     th3ExitFlag=0;
     musicTime.start();
-//    int ci=0;
+    int ci=0;
     while(th3ExitFlag==0)
     {
         this->msleep(videoDelay);
@@ -24,13 +24,13 @@ void timethread::run()
         {
             this->msleep(1);
         }
-/*        ci++;
+        ci++;
         if(ci==200)
         {
-            qd()<<"帧:"<<200000.0/(musicTime.restart());
+//            qd()<<"帧:"<<200000.0/(musicTime.restart());
             ci=0;
             musicTime.start();
-        }*/
+        }
     }
 }
 

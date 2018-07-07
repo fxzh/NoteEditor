@@ -24,7 +24,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     MainWindow::checkSomeFiles();
 
-    setWindowTitle(tr("Note Editor 0.9.0"));
+    setWindowTitle(tr("Note Editor 0.9.1"));
     resize(screenX,screenY);
     screenY=this->height();
     screenX=this->width();
@@ -167,7 +167,7 @@ void MainWindow::mainWindowMenuBar()
 
 void MainWindow::showAbout()
 {
-    aboutMessage.setText("0.9.0");
+    aboutMessage.setText("0.9.1");
     aboutMessage.setWindowTitle("版本");
     aboutMessage.show();
 }

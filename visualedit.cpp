@@ -55,7 +55,7 @@ void MainWindow::choosePreview()
 
 void MainWindow::addNote()
 {
-    MainWindow::setCanSave();
+    setCanSave();
     disconnect(tw,SIGNAL(itemChanged(QTableWidgetItem*)),this,SLOT(sorttw()));
     tww++;
     tw->setRowCount(tww);
@@ -119,7 +119,7 @@ int MainWindow::searchPressNote(int a, int b, double p)
 
 void MainWindow::deleteNote(int a)
 {
-    MainWindow::setCanSave();
+    setCanSave();
     tw->removeRow(a);
     tww=tw->rowCount();
     paintzt=1;
@@ -193,4 +193,176 @@ void MainWindow::searchBpmIndex(int a)
 //    qd()<<paintBpmIndex1<<paintBpmIndex2;
     bpm=bpmTable->item(index0,1)->data(0).toDouble();
     dSlidValueTop=bpmTable->item(paintBpmIndex2,0)->data(0).toInt()+double(m)/double(bh*indexEffect)*double(1250/bpm);
+}
+
+int MainWindow::searchBpmNote(int t)
+{
+    int p=0;
+    int q=bpmTable->rowCount()-1;
+    int r;
+    while(p<=q)
+    {
+//        qs<<p<<q;
+        r=(p+q)/2;
+        if(bpmTable->item(r,0)->data(0).toInt()==t)
+        {
+            return r;
+        }
+        else if(bpmTable->item(r,0)->data(0).toInt()>t)
+        {
+            q=r-1;
+        }
+        else
+        {
+            p=r+1;
+        }
+    }
+    return -1;
+}
+
+void MainWindow::addBpmNote()
+{
+    int r=bpmTable->rowCount();
+    bpmTable->setRowCount(r+1);
+    item=new QTableWidgetItem();
+    item->setData(Qt::DisplayRole,pressTime);
+    bpmTable->setItem(r,0,item);
+    item=new QTableWidgetItem();
+    item->setData(Qt::DisplayRole,editBpm->text().toDouble());
+    bpmTable->setItem(r,1,item);
+    item=new QTableWidgetItem();
+    item->setData(Qt::DisplayRole,editBpm2->text().toDouble());
+    bpmTable->setItem(r,2,item);
+    item=new QTableWidgetItem();
+    item->setData(Qt::DisplayRole,0);
+    bpmTable->setItem(r,3,item);
+    item=new QTableWidgetItem();
+    item->setData(Qt::DisplayRole,0);
+    bpmTable->setItem(r,4,item);
+    bpmTable->sortByColumn(0,Qt::AscendingOrder);
+/*    for(int i=0;i<bpmTable->rowCount();i++)
+    {
+        for(int j=0;j<5;j++)
+        {
+            qs<<bpmTable->item(i,j)->data(0);
+        }
+    }*/
+    int index=searchBpmNote(pressTime);
+    if(index!=-1)
+    {
+        changeBpmNote(index);
+    }
+    else
+    {
+        qs<<"error";
+    }
+}
+
+void MainWindow::changeBpmNote(int index)
+{
+    setCanSave();
+    item=bpmTable->item(index,0);
+    item->setData(Qt::DisplayRole,pressTime);
+    item=bpmTable->item(index,1);
+    item->setData(Qt::DisplayRole,editBpm->text().toDouble());
+    item=bpmTable->item(index,2);
+    item->setData(Qt::DisplayRole,editBpm2->text().toDouble());
+    item=bpmTable->item(index,3);
+    item->setData(Qt::DisplayRole,0);
+    item=bpmTable->item(index,4);
+    item->setData(Qt::DisplayRole,0);
+
+    double b0=bpmTable->item(index,0)->data(0).toDouble();
+    double b1=bpmTable->item(index,1)->data(0).toDouble();
+    double b3=bpmTable->item(index,3)->data(0).toDouble();
+    if(index!=0)
+    {
+        double a0=bpmTable->item(index-1,0)->data(0).toDouble();
+        double a1=bpmTable->item(index-1,1)->data(0).toDouble();
+        double a3=bpmTable->item(index-1,3)->data(0).toDouble();
+        double x=(b0-a0)*a1/1250.0;
+        item=bpmTable->item(index-1,4);
+        item->setData(Qt::DisplayRole,x);
+        item=bpmTable->item(index,3);
+        item->setData(Qt::DisplayRole,a3+x);
+    }
+    else
+    {
+        item=bpmTable->item(index,3);
+        item->setData(Qt::DisplayRole,0);
+    }
+    if(index!=bpmTable->rowCount()-1)
+    {
+        double c0=bpmTable->item(index+1,0)->data(0).toDouble();
+        double c3=bpmTable->item(index+1,3)->data(0).toDouble();
+        double y=(c0-b0)*18/b1;
+        item=bpmTable->item(index,4);
+        item->setData(Qt::DisplayRole,y);
+        double cha=b3+y-c3;
+        for(int i=index+1;i<bpmTable->rowCount()-1;i++)
+        {
+            item=bpmTable->item(i,3);
+            double i3=item->data(0).toDouble();
+            item->setData(Qt::DisplayRole,i3+cha);
+        }
+    }
+    else
+    {
+        item=bpmTable->item(index,4);
+        item->setData(Qt::DisplayRole,-1);
+    }
+}
+
+int MainWindow::searchBpmNote2(int a, int b)
+{
+    int p=0;
+    int q=bpmTable->rowCount();
+    int r;
+    while(p<=q)
+    {
+        r=(p+q)/2;
+        int t=bpmTable->item(r,0)->data(0).toInt();
+        if(t<a)
+        {
+            p=r+1;
+        }
+        else if(t>=b)
+        {
+            q=r-1;
+        }
+        else if(r!=0)
+        {
+            return r;
+        }
+    }
+    return -1;
+}
+
+void MainWindow::deleteBpmNote(int index)
+{
+    setCanSave();
+    if(index==bpmTable->rowCount()-1)
+    {
+        item=bpmTable->item(index-1,4);
+        item->setData(Qt::DisplayRole,-1);
+    }
+    else
+    {
+        double a0=bpmTable->item(index-1,0)->data(0).toDouble();
+        double a1=bpmTable->item(index-1,1)->data(0).toDouble();
+        double a3=bpmTable->item(index-1,3)->data(0).toDouble();
+        double c0=bpmTable->item(index+1,0)->data(0).toDouble();
+        double c3=bpmTable->item(index+1,3)->data(0).toDouble();
+        double x=(c0-a0)*a1/1250.0;
+        item=bpmTable->item(index-1,4);
+        item->setData(0,x);
+        double cha=a3+x-c3;
+        for(int i=index+1;i<bpmTable->rowCount()-1;i++)
+        {
+            item=bpmTable->item(i,3);
+            double i3=item->data(0).toDouble();
+            item->setData(0,i3+cha);
+        }
+    }
+    bpmTable->removeRow(index);
 }
