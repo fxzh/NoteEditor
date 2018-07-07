@@ -5,7 +5,9 @@ void MainWindow::open()
     filedialog=new QFileDialog(this);
     filedialog->setAcceptMode(QFileDialog::AcceptOpen);
     filedialog->setWindowTitle(tr("打开"));
-    filedialog->setNameFilter(tr("All files(*.*)"));
+    QStringList list;
+    list<<"Text files(*.txt)"<<"All files(*.*)";
+    filedialog->setNameFilters(list);
     if(filedialog->exec()==QDialog::Rejected)
     {
         filedialog->close();
@@ -13,14 +15,6 @@ void MainWindow::open()
     }
     else
     {
-        if(firstOpen==0)
-        {
-            initPoint();
-        }
-        PlayAction->setEnabled(true);
-        songAction->setEnabled(true);
-        firstOpen=0;
-        paintzt=1;
         path=filedialog->selectedFiles()[0];
         int cutleft=path.size();
         for(int i=path.size()-1;i>=0;i--)
@@ -33,25 +27,9 @@ void MainWindow::open()
         }
         pathab=path.left(cutleft);
         delete filedialog;
-        setWindowTitle(path);
         filea=new QFile(path);
-        MainWindow::loadfile(filea);
-        MainWindow::initmid();
-        MainWindow::paintmid();
-//        qd()<<"start search";
-        MainWindow::searchBpmIndex(0);
-//        qd()<<"finish search";
-        MainWindow::beforepaint();
+        loadToPaint(filea,path);
     }
-}
-
-void MainWindow::newfile()
-{
-    QDialog *newfiledialog=new QDialog(this);
-    newfiledialog->setGeometry(100,100,300,300);
-    QPushButton *dialogcancel=new QPushButton(newfiledialog);
-    dialogcancel->setGeometry(200,200,50,20);
-    newfiledialog->exec();
 }
 
 void MainWindow::savethatfile()
@@ -65,7 +43,7 @@ void MainWindow::savethatfile()
     else
     {
         QString s=filedialog->selectedFiles()[0];
-        MainWindow::writefile(s);
+        writefile(s);
     }
     delete filedialog;
 }
@@ -190,9 +168,9 @@ void MainWindow::writefile(QString s)
 
 void MainWindow::savefile()
 {
-    MainWindow::setNotSave();
+    setNotSave();
     QString s=this->windowTitle();
-    MainWindow::writefile(s);
+    writefile(s);
 }
 
 void MainWindow::setCanSave()
@@ -209,7 +187,39 @@ void MainWindow::setNotSave()
 
 void MainWindow::closeFile()
 {
+    if(savefileaction->isEnabled()==true)
+    {
+        closeMessage.setWindowTitle("关闭");
+        closeMessage.setText("是否保存并关闭文件");
+        closeMessage.setStandardButtons(QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+        closeMessage.setDefaultButton(QMessageBox::Yes);
+        int ret=closeMessage.exec();
+        if(ret==QMessageBox::Yes)
+        {
+            savefile();
+            afterCloseFile();
+        }
+        else if(ret==QMessageBox::No)
+        {
+            afterCloseFile();
+        }
+    }
+    else
+    {
+        afterCloseFile();
+    }
+}
 
+void MainWindow::afterCloseFile()
+{
+    initPoint();
+    setNotSave();
+    firstOpen=1;
+    PlayAction->setEnabled(false);
+    songAction->setEnabled(false);
+    closeFileAction->setEnabled(false);
+    paintzt=0;
+    setWindowTitle(versionString);
 }
 
 void MainWindow::checkSomeFiles()
@@ -255,4 +265,75 @@ void MainWindow::createPngFile(int r, int g, int b, QString path)
         sePen.drawPoint(0,i);
     }
     sePixmap.save(path);
+}
+
+void MainWindow::receiveNewData(QString songName, QString songAdd, QString initBpm, \
+                                QString arter, QString noter, QString fileName, QString musicTime)
+{
+    int cutleft=songAdd.size();
+    for(int i=songAdd.size()-1;i>=0;i--)
+    {
+        if(songAdd[i]=='/'||songAdd[i]=='\\')
+        {
+            cutleft=i;
+            break;
+        }
+    }
+    QString dir=songAdd.left(cutleft);
+    QString songFile=songAdd.right(songAdd.size()-cutleft-1);
+    QString txt=".txt";
+    QString thefile=fileName+txt;
+    QString puAdd=dir+"/"+thefile;
+    QDir newdir;
+    newdir.setCurrent(dir);
+    QFile *tempFile = new QFile;
+    if(tempFile->exists(thefile))
+    {
+        qDebug()<<"文件存在";
+        return;
+        //todo
+    }
+    else
+    {
+        tempFile->setFileName(thefile);
+        if(tempFile->open(QFile::WriteOnly|QFile::Truncate))
+        {
+            QTextStream *textTempFile=new QTextStream(tempFile);
+            textTempFile->operator <<("3")<<endl\
+                                         <<(songFile)<<endl\
+                                        <<(musicTime)<<endl\
+                                       <<(songName)<<endl\
+                                      <<(arter)<<endl\
+                                     <<(noter)<<endl\
+                                    <<("0")<<endl<<("1")<<endl\
+                                   <<("0")<<endl<<(initBpm)<<endl<<("1")<<endl<<("0")<<endl<<("-1")<<endl<<("0");
+            delete textTempFile;
+            tempFile->close();
+//            delete tempFile;
+            loadToPaint(tempFile,puAdd);
+        }
+        else
+        {
+            qs<<"open failed";
+        }
+    }
+}
+
+void MainWindow::loadToPaint(QFile *a,QString path)
+{
+    if(firstOpen==0)
+    {
+        initPoint();
+    }
+    PlayAction->setEnabled(true);
+    songAction->setEnabled(true);
+    closeFileAction->setEnabled(true);
+    firstOpen=0;
+    paintzt=1;
+    setWindowTitle(path);
+    loadfile(a);
+    initmid2();
+    searchBpmIndex(0);
+    beforepaint();
+    paintEvent(painte);
 }

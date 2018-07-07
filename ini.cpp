@@ -28,7 +28,7 @@ void MainWindow::readAniniFile()
     emit sendVideoDelay(videoDelay);
     smallbarIndex=iniSettings->value("Smallbar/NumbarIndex").toString().toInt();
     smallbarPx=iniSettings->value("Smallbar/px").toString().toInt();
-    MainWindow::writeSetting();
+    writeSetting();
     delete iniSettings;
 }
 

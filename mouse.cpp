@@ -2,15 +2,18 @@
 
 void MainWindow::mousePressEvent(QMouseEvent *pe)
 {
-    if(paintzt!=0)
+    if(paintzt!=0&&labvis->hasMouseTracking()==true)
     {
+        double bpmeffect=bpmTable->item(mouseLabBpmTable,2)->data(0).toDouble();
         if(pe->button()==Qt::LeftButton)
         {
             if(MouseInLabvis==1)
             {
                 if(editZt==1||editZt==2||editZt==3)
                 {
-                    pressTime=int(dFirstSmallbarTime+int((labvis4-dFirstSmallpx-labMouseY)/bh)*dSmallbarTime);
+//                    qd()<<"eff"<<bpmeffect<<dtForPress;
+                    pressTime=int(dtForPress+int((labvis4-dpxForPress-labMouseY)/\
+                                                         double(bh*bpmeffect))*dSmallbarTime);
                     pressPos=5*labMouseX/double(labvis3)-2.5;
                     addNote();
                 }
@@ -19,29 +22,78 @@ void MainWindow::mousePressEvent(QMouseEvent *pe)
                     if(longEditZt==0)//long note 起始
                     {
                         longEditZt=1;
-                        pressTime=int(dFirstSmallbarTime+int((labvis4-dFirstSmallpx-labMouseY)/bh)*dSmallbarTime);
+                        pressTime=int(dtForPress+int((labvis4-dpxForPress-labMouseY)/\
+                                                             (bh*bpmeffect))*dSmallbarTime);
                         pressPos=5*labMouseX/double(labvis3)-2.5;
+                        fixEditPointX=editPoint1.x();
+                        fixEditPointX2=editPoint2.x();
                     }
                     else if(longEditZt==1)//long note 结束
                     {
                         longEditZt=0;
-                        pressTime2=int(dFirstSmallbarTime+int((labvis4-dFirstSmallpx-labMouseY)/bh)*dSmallbarTime);
+                        pressTime2=int(dtForPress+int((labvis4-dpxForPress-labMouseY)/\
+                                                              (bh*bpmeffect))*dSmallbarTime);
                         addNote();
+                    }
+                }
+                else if(editZt==6)
+                {
+                    pressTime=int(dtForPress+int((labvis4-dpxForPress-labMouseY)/\
+                                                         double(bh*bpmeffect))*dSmallbarTime);
+                    int index=searchBpmNote(pressTime);
+                    if(index==-1)
+                    {
+                        addBpmNote();
+                        searchBpmIndex(slid->value());
+           /*             for(int i=0;i<bpmTable->rowCount();i++)
+                        {
+                            for(int j=0;j<5;j++)
+                            {
+                                qs<<bpmTable->item(i,j)->data(0);
+                            }
+                        }
+                        qs<<endl;*/
+                    }
+                    else
+                    {
+                        changeBpmNote(index);
                     }
                 }
             }
         }
         else if(pe->button()==Qt::RightButton)
         {
-            if(MouseInLabvis==1&&editZt!=0)
+            if(MouseInLabvis==1)
             {
-                delPressTime1=int(dFirstSmallbarTime+int((labvis4-dFirstSmallpx-labMouseY)/bh)*dSmallbarTime);
-                delPressTime2=int(dFirstSmallbarTime+int((labvis4-dFirstSmallpx-labMouseY)/bh+1)*dSmallbarTime);
-                pressPos=5*labMouseX/double(labvis3)-2.5;
-                int a=searchPressNote(delPressTime1,delPressTime2,pressPos);
-                if(a!=-1)
+                delPressTime1=int(dtForPress+int((labvis4-dpxForPress-labMouseY)/\
+                                                         (bh*bpmeffect))*dSmallbarTime);
+                delPressTime2=int(dtForPress+int((labvis4-dpxForPress-labMouseY)/\
+                                                         (bh*bpmeffect)+1)*dSmallbarTime);
+                if(editZt!=0&&editZt!=6)
                 {
-                    deleteNote(a);
+                    pressPos=5*labMouseX/double(labvis3)-2.5;
+                    int a=searchPressNote(delPressTime1,delPressTime2,pressPos);
+                    if(a!=-1)
+                    {
+                        deleteNote(a);
+                    }
+                }
+                else if(editZt==6)
+                {
+                    int a=searchBpmNote2(delPressTime1,delPressTime2);
+                    if(a!=-1)
+                    {
+                        deleteBpmNote(a);
+                        searchBpmIndex(slid->value());
+/*                        ttemp=1;
+                        for(int i=0;i<bpmTable->rowCount();i++)
+                        {
+                            for(int j=0;j<5;j++)
+                            {
+                                qs<<bpmTable->item(i,j)->data(0);
+                            }
+                        }*/
+                    }
                 }
             }
         }

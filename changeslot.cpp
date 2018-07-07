@@ -25,8 +25,8 @@ void MainWindow::changebh(int a)
 void MainWindow::changeslid(int a)
 {
     slidvalue=a;
-    MainWindow::searchBpmIndex(a);
-    MainWindow::beforepaint();
+    searchBpmIndex(a);
+    beforepaint();
     paintzt=1;
 }
 

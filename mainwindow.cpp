@@ -3,6 +3,7 @@
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
+    versionString="Note Editor 0.9.2";
     deskw=new QDesktopWidget();
     deskw=QApplication::desktop();
     QRect deskrect=deskw->availableGeometry();    
@@ -22,14 +23,17 @@ MainWindow::MainWindow(QWidget *parent)
     connect(this,SIGNAL(sendVideoDelay(int)),th3,SLOT(getVideoDelay(int)));
     connect(this,SIGNAL(th3ExitLoop()),th3,SLOT(exitWhile()));
 
-    MainWindow::checkSomeFiles();
+    newFileDia=new NewFileDialog();
+    newFileDia->setWindowTitle("新建文件");
 
-    setWindowTitle(tr("Note Editor 0.9.0"));
+    checkSomeFiles();
+
+    setWindowTitle(versionString);
     resize(screenX,screenY);
     screenY=this->height();
     screenX=this->width();
 
-    MainWindow::mainWindowMenuBar();
+    mainWindowMenuBar();
 
     this->setMouseTracking(true);
 }
@@ -44,9 +48,9 @@ void MainWindow::mainWindowMenuBar()
     newfileaction=new QAction(QIcon(":/img/newfile.png"),"&新建...",this);
     newfileaction->setShortcut(tr("ctrl+n"));
     newfileaction->setStatusTip(tr("新建一个文件"));
-    connect(newfileaction,&QAction::triggered,this,&MainWindow::newfile);
-
-    newfileaction->setDisabled(true);//To Delete
+    connect(newfileaction,SIGNAL(triggered(bool)),newFileDia,SLOT(show()));
+    connect(newFileDia,SIGNAL(sendData(QString,QString,QString,QString,QString,QString,QString)),\
+            this,SLOT(receiveNewData(QString,QString,QString,QString,QString,QString,QString)));
 
     savefileaction=new QAction(QIcon(":/img/cantsavefile.png"),"&保存...",this);
     savefileaction->setShortcut(tr("ctrl+s"));
@@ -167,7 +171,7 @@ void MainWindow::mainWindowMenuBar()
 
 void MainWindow::showAbout()
 {
-    aboutMessage.setText("0.9.0");
+    aboutMessage.setText(versionString);
     aboutMessage.setWindowTitle("版本");
     aboutMessage.show();
 }
@@ -183,7 +187,7 @@ void MainWindow::closeEvent(QCloseEvent *ce)
         int ret=closeMessage.exec();
         if(ret==QMessageBox::Yes)
         {
-            MainWindow::savefile();
+            savefile();
             ce->accept();
         }
         else if(ret==QMessageBox::No)

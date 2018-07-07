@@ -33,36 +33,31 @@
 #include <QPoint>
 #include <QSettings>
 #include <QTime>
+#include <QGridLayout>
 #include <secthread.h>
 #include <timethread.h>
 #include <songdialog.h>
 #include <settingdialog.h>
+#include <newfiledialog.h>
 #define qd qDebug
+#define qs qDebug()
 
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
 public:
-    struct note
-    {
-        int kind;       //0:单点  1：不用点的单点    2：滑     3：按     4：不用点的按
-        int ntime;
-        double weizhi;
-        double daxiao;
-        int can;
-    };
     int scrh;//屏幕高
     int scrw;//屏幕宽
     int menuh;//菜单栏高
     int toolh;//工具按钮高
     int stah;//底部状态栏高
-//    note anote[10000];
     int cishu;
     int zongtime;
     double bpm;int bpms;
     double effect;
     int offset;
+    int ttemp=0;
 
     QTableWidget *tw,*bpmTable;
     QFile *filea;
@@ -71,8 +66,9 @@ public:
             *settingAction,*setBpm;
     QFileDialog *filedialog;
     QDesktopWidget *deskw;
-    QLabel *labeltime,*labsb,*labbh,*LabWhellDistance,*labNoteWidth,*labvis;
-    QString name,arter,noter,path,pathab,PathMusic,musicName,runPath,iniPath,sePixmapDir,sePixmapPath;
+    QLabel *labeltime,*labsb,*labbh,*LabWhellDistance,*labNoteWidth,*labvis,*labBpm,*labBpm2;
+    QLineEdit *editBpm,*editBpm2;
+    QString name,arter,noter,path,pathab,PathMusic,musicName,runPath,iniPath,sePixmapDir,sePixmapPath,versionString;
     QComboBox *smallbar,*WhellDistance;
     QMessageBox aboutMessage,closeMessage;
     QSettings *iniSettings;
@@ -80,6 +76,8 @@ public:
     QDoubleSpinBox *editNoteWidth;
     QSlider *slid;
     QTime testTime;int times=0;
+    QGridLayout *midLayout;
+    QWidget *midWidget;
 
     QPaintEvent *painte;
     QMouseEvent *mousee;
@@ -88,6 +86,7 @@ public:
     timethread *th3;
     SongDialog *editSongDialog;
     SettingDialog *setInit;
+    NewFileDialog *newFileDia;
 
     int smallbars=16;               //小节数
     int bh=50;                      //每小节像素高
@@ -103,16 +102,8 @@ public:
 private:
     int twh,tww;//twh：表格列=5     twh：表格行
     int twliew;//最左列宽
-    int texttime1,texttime2,texttime3,texttime4;
-    int labeltime1,labeltime2,labeltime3,labeltime4;
-    int labsb1,labsb2,labsb3,labsb4;
-    int sbsb1,sbsb2,sbsb3,sbsb4;
-    int labbarheight1,labbarheight2,labbarheight3,labbarheight4;
-    int sbbarheight1,sbbarheight2,sbbarheight3,sbbarheight4;
     int labvis1,labvis2,labvis3,labvis4;
     int scrvis1,scrvis2,scrvis3,scrvis4;
-    int LabWhellDistance1,LabWhellDistance2,LabWhellDistance3,LabWhellDistance4;
-    int CbWhellDistance1,CbWhellDistance2,CbWhellDistance3,CbWhellDistance4;
     int labNoteWidth1,labNoteWidth2,labNoteWidth3,labNoteWidth4;
     int editNoteWidth1,editNoteWidth2,editNoteWidth3,editNoteWidth4;
     int paintzt=0;//0:没有文件打开/1：需要重绘/2：不需要重绘
@@ -157,9 +148,11 @@ private:
     double dBpmConPx;int bpmConPx;
     double dFirstNonePx;int firstNonePx;
     double dBpmLastTime;int bpmLastTime;
+    int mouseLabBpmTable;
+    int fixEditPointX,fixEditPointX2;
+    double dtForPress,dpxForPress;
 public slots:
     void open();
-    void newfile();
     void savefile();
     void savethatfile();
     void sorttw();
@@ -186,6 +179,8 @@ public slots:
     void cancelButton();
     void settingEnsureButton();
     void settingCancelButton();
+    void receiveNewData(QString songName,QString songAdd,QString initBpm,\
+                        QString arter,QString noter,QString fileName,QString musicTime);
 signals:
     void sendPaintZt(int);
     void sendPathMusic(QString);
@@ -196,20 +191,28 @@ signals:
     void sendTh2GetMusic();
     void th3ExitLoop();
 public:
+    void loadToPaint(QFile *a, QString path);
     void loadfile(QFile *filea);
     void writefile(QString s);
     void initmid();
+    void initmid2();
     void paintmid();
     void beforepaint();
     void musicBeforePaint();
     void mainWindowMenuBar();
     void editBeforePaint();
     void addNote();
+    int searchBpmNote(int t);
+    void addBpmNote();
+    void changeBpmNote(int index);
+    int searchBpmNote2(int a,int b);
+    void deleteBpmNote(int index);
     void deleteNote(int a);
     int searchPressNote(int a,int b,double p);
     void initPoint();
     void setCanSave();
     void setNotSave();
+    void afterCloseFile();
     void createAniniFile();
     void readAniniFile();
     void writeAniniFile();
